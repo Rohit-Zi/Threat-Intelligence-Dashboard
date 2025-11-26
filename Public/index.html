@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Threat Intelligence Dashboard</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Lucide React Icons (simplified SVG versions)
+        const Shield = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+        );
+
+        const AlertTriangle = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+        );
+
+        const Activity = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+        );
+
+        const Database = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+            </svg>
+        );
+
+        const Download = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+        );
+
+        const RefreshCw = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+        );
+
+        const Lock = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+        );
+
+        const Unlock = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+            </svg>
+        );
+
+        const Eye = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+        );
+
+        const FileText = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+        );
+
+        const Server = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+            </svg>
+        );
+
+        function CyberSecurityDashboard() {
+            const [threats, setThreats] = useState([]);
+            const [logs, setLogs] = useState([]);
+            const [stats, setStats] = useState({
+                total: 0,
+                high: 0,
+                medium: 0,
+                low: 0,
+                blocked: 0
+            });
+            const [loading, setLoading] = useState(false);
+
+            const generateThreat = () => {
+                const severities = ['high', 'medium', 'low'];
+                const types = ['SQL Injection', 'XSS Attack', 'DDoS Attempt', 'Brute Force', 'Malware', 'Phishing'];
+                const ips = ['192.168.1.', '10.0.0.', '172.16.0.', '203.0.113.'];
+                
+                return {
+                    id: Date.now() + Math.random(),
+                    type: types[Math.floor(Math.random() * types.length)],
+                    severity: severities[Math.floor(Math.random() * severities.length)],
+                    ip: ips[Math.floor(Math.random() * ips.length)] + Math.floor(Math.random() * 255),
+                    timestamp: new Date().toLocaleString(),
+                    blocked: Math.random() > 0.3
+                };
+            };
+
+            const addLog = (message, type = 'info') => {
+                setLogs(prev => [{
+                    id: Date.now(),
+                    message,
+                    type,
+                    timestamp: new Date().toLocaleTimeString()
+                }, ...prev].slice(0, 10));
+            };
+
+            const scanSystem = () => {
+                setLoading(true);
+                addLog('Starting security scan...', 'info');
+                
+                setTimeout(() => {
+                    const newThreat = generateThreat();
+                    setThreats(prev => [newThreat, ...prev].slice(0, 20));
+                    
+                    setStats(prev => ({
+                        total: prev.total + 1,
+                        high: prev.high + (newThreat.severity === 'high' ? 1 : 0),
+                        medium: prev.medium + (newThreat.severity === 'medium' ? 1 : 0),
+                        low: prev.low + (newThreat.severity === 'low' ? 1 : 0),
+                        blocked: prev.blocked + (newThreat.blocked ? 1 : 0)
+                    }));
+
+                    addLog(`Threat detected: ${newThreat.type} from ${newThreat.ip}`, 
+                           newThreat.severity === 'high' ? 'danger' : 'warning');
+                    
+                    if (newThreat.blocked) {
+                        addLog(`Threat blocked successfully`, 'success');
+                    }
+                    
+                    setLoading(false);
+                }, 1500);
+            };
+
+            const exportReport = () => {
+                const report = {
+                    generatedAt: new Date().toISOString(),
+                    statistics: stats,
+                    threats: threats,
+                    logs: logs
+                };
+                
+                const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `security-report-${Date.now()}.json`;
+                a.click();
+                
+                addLog('Security report exported', 'success');
+            };
+
+            useEffect(() => {
+                addLog('Cybersecurity monitoring system initialized', 'success');
+            }, []);
+
+            const getSeverityColor = (severity) => {
+                switch(severity) {
+                    case 'high': return 'bg-red-500';
+                    case 'medium': return 'bg-yellow-500';
+                    case 'low': return 'bg-blue-500';
+                    default: return 'bg-gray-500';
+                }
+            };
+
+            const getLogColor = (type) => {
+                switch(type) {
+                    case 'danger': return 'text-red-400';
+                    case 'warning': return 'text-yellow-400';
+                    case 'success': return 'text-green-400';
+                    default: return 'text-blue-400';
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-900 text-white p-6">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                                <Shield className="w-10 h-10 text-cyan-400" />
+                                <div>
+                                    <h1 className="text-3xl font-bold">Cybersecurity Intelligence Platform</h1>
+                                    <p className="text-gray-400">Automated Threat Detection & Response System</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={scanSystem}
+                                    disabled={loading}
+                                    className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg transition disabled:opacity-50"
+                                >
+                                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                                    Scan Now
+                                </button>
+                                <button
+                                    onClick={exportReport}
+                                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Export Report
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+                            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                                <Database className="w-8 h-8 text-cyan-400 mb-2" />
+                                <div className="text-3xl font-bold">{stats.total}</div>
+                                <div className="text-gray-400 text-sm">Total Threats</div>
+                            </div>
+
+                            <div className="bg-gray-800 p-6 rounded-lg border border-red-900">
+                                <AlertTriangle className="w-8 h-8 text-red-400 mb-2" />
+                                <div className="text-3xl font-bold text-red-400">{stats.high}</div>
+                                <div className="text-gray-400 text-sm">High Severity</div>
+                            </div>
+
+                            <div className="bg-gray-800 p-6 rounded-lg border border-yellow-900">
+                                <Activity className="w-8 h-8 text-yellow-400 mb-2" />
+                                <div className="text-3xl font-bold text-yellow-400">{stats.medium}</div>
+                                <div className="text-gray-400 text-sm">Medium Severity</div>
+                            </div>
+
+                            <div className="bg-gray-800 p-6 rounded-lg border border-blue-900">
+                                <Eye className="w-8 h-8 text-blue-400 mb-2" />
+                                <div className="text-3xl font-bold text-blue-400">{stats.low}</div>
+                                <div className="text-gray-400 text-sm">Low Severity</div>
+                            </div>
+
+                            <div className="bg-gray-800 p-6 rounded-lg border border-green-900">
+                                <Lock className="w-8 h-8 text-green-400 mb-2" />
+                                <div className="text-3xl font-bold text-green-400">{stats.blocked}</div>
+                                <div className="text-gray-400 text-sm">Threats Blocked</div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-2 bg-gray-800 rounded-lg border border-gray-700 p-6">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <Server className="w-5 h-5 text-cyan-400" />
+                                    <h2 className="text-xl font-bold">Detected Threats</h2>
+                                </div>
+                                
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead>
+                                            <tr className="border-b border-gray-700">
+                                                <th className="text-left py-3 px-2 text-gray-400 font-medium">Type</th>
+                                                <th className="text-left py-3 px-2 text-gray-400 font-medium">Severity</th>
+                                                <th className="text-left py-3 px-2 text-gray-400 font-medium">Source IP</th>
+                                                <th className="text-left py-3 px-2 text-gray-400 font-medium">Time</th>
+                                                <th className="text-left py-3 px-2 text-gray-400 font-medium">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {threats.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan="5" className="text-center py-8 text-gray-500">
+                                                        No threats detected. Click "Scan Now" to start monitoring.
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                threats.map(threat => (
+                                                    <tr key={threat.id} className="border-b border-gray-700 hover:bg-gray-750">
+                                                        <td className="py-3 px-2">{threat.type}</td>
+                                                        <td className="py-3 px-2">
+                                                            <span className={`${getSeverityColor(threat.severity)} px-2 py-1 rounded text-xs font-bold uppercase`}>
+                                                                {threat.severity}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 px-2 font-mono text-sm">{threat.ip}</td>
+                                                        <td className="py-3 px-2 text-gray-400 text-sm">{threat.timestamp}</td>
+                                                        <td className="py-3 px-2">
+                                                            {threat.blocked ? (
+                                                                <Lock className="w-4 h-4 text-green-400" />
+                                                            ) : (
+                                                                <Unlock className="w-4 h-4 text-red-400" />
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <FileText className="w-5 h-5 text-cyan-400" />
+                                    <h2 className="text-xl font-bold">Activity Log</h2>
+                                </div>
+                                
+                                <div className="space-y-3 max-h-96 overflow-y-auto">
+                                    {logs.map(log => (
+                                        <div key={log.id} className="border-l-2 border-cyan-500 pl-3 py-2">
+                                            <div className={`text-sm font-mono ${getLogColor(log.type)}`}>
+                                                {log.message}
+                                            </div>
+                                            <div className="text-xs text-gray-500 mt-1">{log.timestamp}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 bg-cyan-900 bg-opacity-20 border border-cyan-800 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                                <Shield className="w-5 h-5 text-cyan-400 mt-0.5" />
+                                <div className="text-sm">
+                                    <div className="font-semibold text-cyan-400 mb-1">Dashboard Active</div>
+                                    <div className="text-gray-300">
+                                        Click "Scan Now" to simulate threat detection. Real-world integration would connect to SIEM systems, IDS/IPS, and n8n workflows for automated incident response.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<CyberSecurityDashboard />, document.getElementById('root'));
+    </script>
+</body>
+</html>

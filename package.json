@@ -1,0 +1,33 @@
+{
+  "name": "cybersecurity-dashboard",
+  "version": "2.0.0",
+  "description": "Cybersecurity Threat Intelligence Dashboard with n8n Automation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "n8n": "n8n start"
+  },
+  "keywords": [
+    "cybersecurity",
+    "n8n",
+    "automation",
+    "threat-intelligence",
+    "monitoring",
+    "security"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
